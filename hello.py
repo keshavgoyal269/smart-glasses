@@ -1,9 +1,11 @@
 # Smart Glasses AI - by Keshav Goyal
+from flask import Flask, render_template
 
-objects_detected = ["chair", "laptop", "person", "bottle", "phone"]
+app = Flask(__name__)
 
-for object in objects_detected:
-    if object == "person":
-        print("⚠️  ALERT: Person detected!")
-    else:
-        print("I can see a:", object)
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+if __name__ == '__main__':
+    app.run(debug=True)
