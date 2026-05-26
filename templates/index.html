@@ -251,34 +251,79 @@
     <!-- Detection Results -->
     <div class="detection-panel">
         <div class="panel-title">Detection Results</div>
-        <div class="detection-item">
-            <span>👤</span>
-            <span class="det-name">Person</span>
-            <span class="det-conf">94%</span>
-        </div>
-        <div class="detection-item">
-            <span>💻</span>
-            <span class="det-name">Laptop</span>
-            <span class="det-conf">88%</span>
-        </div>
-        <div class="detection-item">
-            <span>🪑</span>
-            <span class="det-name">Chair</span>
-            <span class="det-conf">76%</span>
-        </div>
+        <div id="detection-list"></div>
+        
+    </div>
     </div>
 
     <div class="footer">Powered by Python · Flask · OpenCV · Whisper AI</div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
     <script>
-        const video = document.getElementById('webcam');
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                video.srcObject = stream;
-            })
-            .catch(err => {
-                console.log('Camera error:', err);
-            });
-    </script>
+    const video = document.getElementById('webcam');
+    const detectionList = document.getElementById('detection-list');
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+            video.srcObject = stream;
+            video.onloadedmetadata = () => {
+                runDetection();
+            };
+        })
+        .catch(err => {
+            console.log('Camera error:', err);
+        });
+
+    async function runDetection() {
+        const model = await cocoSsd.load();
+        detectFrame(model);
+    }
+
+    function detectFrame(model) {
+        model.detect(video).then(predictions => {
+            updateDetections(predictions);
+            requestAnimationFrame(() => detectFrame(model));
+        });
+    }
+
+    let stableDetections = {};
+let stableResults = [];
+    function updateDetections(predictions) {
+        predictions = predictions.filter(p => p.score > 0.6);
+    predictions = predictions.slice(0, 2);
+    predictions = predictions.filter((p, index, self) => index === self.findIndex(t => t.class === p.class));
+
+    predictions.forEach(prediction => {
+        const cls = prediction.class;
+        stableDetections[cls] = (stableDetections[cls] || 0) + 1;
+    });
+
+    Object.keys(stableDetections).forEach(cls => {
+        if (!predictions.find(p => p.class === cls)) {
+            stableDetections[cls] = 0;
+        }
+    });
+
+    stableResults = predictions.filter(p => stableDetections[p.class] >= 3);
+
+    detectionList.innerHTML = '';
+    if (stableResults.length === 0) {
+        detectionList.innerHTML = '<div class="detection-item"><span class="det-name">Scanning...</span></div>';
+        return;
+    }
+    stableResults.forEach(prediction => {
+        const confidence = Math.round(prediction.score * 100);
+        const item = document.createElement('div');
+        item.className = 'detection-item';
+        item.innerHTML = `
+            <span>🔍</span>
+            <span class="det-name">${prediction.class}</span>
+            <span class="det-conf">${confidence}%</span>
+        `;
+        detectionList.appendChild(item);
+    });
+}
+</script>
 </body>
 </html>
