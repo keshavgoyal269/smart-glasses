@@ -9,7 +9,7 @@
         body {
             background: #050508;
             color: white;
-            font-family: 'Arial', sans-serif;
+            font-family: Arial, sans-serif;
             min-height: 100vh;
             padding: 20px;
         }
@@ -30,13 +30,16 @@
         .glasses-container {
             display: flex;
             justify-content: center;
-            align-items: stretch;
+            align-items: center;
             gap: 10px;
             margin-bottom: 20px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
         }
         .lens {
-            width: 320px;
-            height: 220px;
+            flex: 1;
+            height: 240px;
             border: 2px solid #00e5ff33;
             border-radius: 20px;
             background: #0a0a1a;
@@ -51,6 +54,7 @@
             color: #00e5ff;
             letter-spacing: 2px;
             text-transform: uppercase;
+            z-index: 10;
         }
         .scan-line {
             position: absolute;
@@ -58,50 +62,56 @@
             height: 2px;
             background: linear-gradient(90deg, transparent, #00e5ff, transparent);
             animation: scan 2s linear infinite;
+            z-index: 10;
         }
         @keyframes scan {
             0% { top: 0; }
             100% { top: 100%; }
         }
-        .camera-placeholder {
+        video {
             width: 100%;
             height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            gap: 8px;
+            object-fit: cover;
+            border-radius: 18px;
+            transform: scaleX(-1);
         }
-        .camera-icon { font-size: 32px; opacity: 0.2; }
-        .camera-text { font-size: 10px; color: #333; letter-spacing: 1px; }
         .bridge {
             width: 20px;
+            min-width: 20px;
             border-top: 2px solid #00e5ff33;
             border-bottom: 2px solid #00e5ff33;
-            align-self: center;
             height: 30px;
         }
         .hud-panel {
-            padding: 15px;
+            padding: 12px;
             display: flex;
             flex-direction: column;
             gap: 8px;
+            height: 100%;
             justify-content: center;
         }
         .hud-row {
             background: rgba(0,229,255,0.05);
             border: 1px solid rgba(0,229,255,0.1);
             border-radius: 8px;
-            padding: 8px 12px;
+            padding: 7px 10px;
             display: flex;
             align-items: center;
             gap: 8px;
             font-size: 11px;
         }
-        .hud-title { color: #00e5ff; font-size: 9px; letter-spacing: 1px; }
-        .hud-value { color: #ccc; font-size: 11px; }
+        .hud-title {
+            color: #00e5ff;
+            font-size: 9px;
+            letter-spacing: 1px;
+        }
+        .hud-value {
+            color: #ccc;
+            font-size: 11px;
+        }
         .status-dot {
-            width: 6px; height: 6px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             background: #00ff88;
             animation: blink 1.5s infinite;
@@ -116,6 +126,10 @@
             justify-content: center;
             gap: 10px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
         }
         .ctrl-btn {
             background: #0a0a1a;
@@ -127,18 +141,13 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        .ctrl-btn:hover {
-            border-color: #00e5ff;
-            color: #00e5ff;
-            background: rgba(0,229,255,0.1);
-        }
-        .ctrl-btn.active {
+        .ctrl-btn:hover, .ctrl-btn.active {
             border-color: #00e5ff;
             color: #00e5ff;
             background: rgba(0,229,255,0.1);
         }
         .detection-panel {
-            max-width: 660px;
+            max-width: 900px;
             margin: 0 auto 20px;
             background: #0a0a1a;
             border: 1px solid #00e5ff22;
@@ -159,7 +168,6 @@
             border-bottom: 1px solid #ffffff08;
             font-size: 12px;
         }
-        .det-icon { font-size: 16px; }
         .det-name { flex: 1; color: #ccc; }
         .det-conf {
             font-size: 10px;
@@ -183,14 +191,11 @@
     </div>
 
     <div class="glasses-container">
-        <!-- Left Lens -->
+        <!-- Left Lens - Camera -->
         <div class="lens">
             <div class="lens-label">Camera Feed</div>
             <div class="scan-line"></div>
-            <div class="camera-placeholder">
-                <div class="camera-icon">📷</div>
-                <div class="camera-text">Awaiting camera input</div>
-            </div>
+            <video id="webcam" autoplay playsinline></video>
         </div>
 
         <div class="bridge"></div>
@@ -200,7 +205,7 @@
             <div class="lens-label">HUD Display</div>
             <div class="hud-panel">
                 <div class="hud-row">
-                    <span>🕐</span>
+                    <span>🟢</span>
                     <div>
                         <div class="hud-title">Status</div>
                         <div class="hud-value">System Online</div>
@@ -240,28 +245,40 @@
         <button class="ctrl-btn">🧭 Navigate</button>
         <button class="ctrl-btn">⭐ Context</button>
         <button class="ctrl-btn">🎵 Music</button>
+        <button class="ctrl-btn">📞 Call</button>
     </div>
 
     <!-- Detection Results -->
     <div class="detection-panel">
         <div class="panel-title">Detection Results</div>
         <div class="detection-item">
-            <span class="det-icon">👤</span>
+            <span>👤</span>
             <span class="det-name">Person</span>
             <span class="det-conf">94%</span>
         </div>
         <div class="detection-item">
-            <span class="det-icon">💻</span>
+            <span>💻</span>
             <span class="det-name">Laptop</span>
             <span class="det-conf">88%</span>
         </div>
         <div class="detection-item">
-            <span class="det-icon">🪑</span>
+            <span>🪑</span>
             <span class="det-name">Chair</span>
             <span class="det-conf">76%</span>
         </div>
     </div>
 
     <div class="footer">Powered by Python · Flask · OpenCV · Whisper AI</div>
+
+    <script>
+        const video = document.getElementById('webcam');
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                console.log('Camera error:', err);
+            });
+    </script>
 </body>
 </html>
