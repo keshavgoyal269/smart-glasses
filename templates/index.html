@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Glasses AI</title>
+    <title>Smart Glasses AI — JEEVIKA</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -121,6 +121,60 @@
             0%,100% { opacity: 1; }
             50% { opacity: 0.2; }
         }
+        .jeevika-status {
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #0a0a1a;
+            border: 1px solid #6c63ff33;
+            border-radius: 12px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .jeevika-status h3 {
+            color: #6c63ff;
+            font-size: 12px;
+            letter-spacing: 2px;
+            margin-bottom: 4px;
+        }
+        .jeevika-status p {
+            color: #aaa;
+            font-size: 11px;
+        }
+        #jeevika-message {
+            color: #00e5ff;
+            font-size: 13px;
+            font-style: italic;
+            margin-top: 4px;
+            min-height: 20px;
+        }
+        .wake-btn {
+            display: block;
+            margin: 0 auto 15px;
+            background: linear-gradient(135deg, #6c63ff, #00e5ff);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+        }
+        .wake-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(108,99,255,0.4);
+        }
+        .wake-btn.listening {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+            animation: pulse-btn 1s infinite;
+        }
+        @keyframes pulse-btn {
+            0%,100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
         .controls {
             display: flex;
             justify-content: center;
@@ -181,26 +235,23 @@
             font-size: 9px;
             color: #333;
             letter-spacing: 2px;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>SMART GLASSES AI</h1>
-        <p>by Keshav Goyal — System Online</p>
+        <p>by Keshav Goyal — Powered by JEEVIKA</p>
     </div>
 
     <div class="glasses-container">
-        <!-- Left Lens - Camera -->
         <div class="lens">
             <div class="lens-label">Camera Feed</div>
             <div class="scan-line"></div>
             <video id="webcam" autoplay playsinline></video>
         </div>
-
         <div class="bridge"></div>
-
-        <!-- Right Lens - HUD -->
         <div class="lens">
             <div class="lens-label">HUD Display</div>
             <div class="hud-panel">
@@ -208,7 +259,7 @@
                     <span>🟢</span>
                     <div>
                         <div class="hud-title">Status</div>
-                        <div class="hud-value">System Online</div>
+                        <div class="hud-value" id="hud-status">Waiting...</div>
                     </div>
                     <div class="status-dot"></div>
                 </div>
@@ -216,14 +267,14 @@
                     <span>👁</span>
                     <div>
                         <div class="hud-title">Detection</div>
-                        <div class="hud-value">Ready</div>
+                        <div class="hud-value" id="hud-detection">Standby</div>
                     </div>
                 </div>
                 <div class="hud-row">
                     <span>🎤</span>
                     <div>
-                        <div class="hud-title">Assistant</div>
-                        <div class="hud-value">Listening...</div>
+                        <div class="hud-title">JEEVIKA</div>
+                        <div class="hud-value" id="hud-jeevika">Sleeping...</div>
                     </div>
                 </div>
                 <div class="hud-row">
@@ -237,10 +288,21 @@
         </div>
     </div>
 
+    <!-- JEEVIKA Status -->
+    <div class="jeevika-status">
+        <h3>✨ JEEVIKA</h3>
+        <p id="jeevika-message">Say "Hey Jeevika" to wake me up...</p>
+    </div>
+
+    <!-- Wake Button -->
+    <button class="wake-btn" id="wake-btn" onclick="toggleListening()">
+        🎤 Hey Jeevika
+    </button>
+
     <!-- Controls -->
     <div class="controls">
-        <button class="ctrl-btn active">👁 Detect</button>
-        <button class="ctrl-btn">🎤 Voice</button>
+        <button class="ctrl-btn active" onclick="commandDetect()">👁 Detect</button>
+        <button class="ctrl-btn" onclick="commandVoice()">🎤 Voice</button>
         <button class="ctrl-btn">📖 Read Text</button>
         <button class="ctrl-btn">🧭 Navigate</button>
         <button class="ctrl-btn">⭐ Context</button>
@@ -251,79 +313,268 @@
     <!-- Detection Results -->
     <div class="detection-panel">
         <div class="panel-title">Detection Results</div>
-        <div id="detection-list"></div>
-        
-    </div>
+        <div id="detection-list">
+            <div class="detection-item">
+                <span class="det-name">Waiting for JEEVIKA...</span>
+            </div>
+        </div>
     </div>
 
-    <div class="footer">Powered by Python · Flask · OpenCV · Whisper AI</div>
+    <div class="footer">Powered by Python · Flask · TensorFlow · JEEVIKA AI</div>
 
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
     <script>
-    const video = document.getElementById('webcam');
-    const detectionList = document.getElementById('detection-list');
+        // --- VARIABLES ---
+        const video = document.getElementById('webcam');
+        const detectionList = document.getElementById('detection-list');
+        const jeevikaMsgEl = document.getElementById('jeevika-message');
+        const wakeBtn = document.getElementById('wake-btn');
+        const hudJeevika = document.getElementById('hud-jeevika');
+        const hudStatus = document.getElementById('hud-status');
+        const hudDetection = document.getElementById('hud-detection');
 
-    navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-            video.srcObject = stream;
-            video.onloadedmetadata = () => {
-                runDetection();
-            };
-        })
-        .catch(err => {
-            console.log('Camera error:', err);
+        let isAwake = false;
+        let isListening = false;
+        let isDetecting = false;
+        let isSpeaking = false;
+        let model = null;
+        let stableDetections = {};
+        let recognition = null;
+        let selectedVoice = null;
+
+        // --- CAMERA SETUP ---
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                console.log('Camera error:', err);
+            });
+
+        // --- LOAD AI MODEL ---
+        cocoSsd.load().then(m => {
+            model = m;
+            hudStatus.textContent = 'System Online';
+            console.log('JEEVIKA AI model loaded');
         });
+        document.addEventListener('click', function startOnce() {
+    startWakeWordListener();
+    document.removeEventListener('click', startOnce);
+});
+        
 
-    async function runDetection() {
-        const model = await cocoSsd.load();
-        detectFrame(model);
-    }
-
-    function detectFrame(model) {
-        model.detect(video).then(predictions => {
-            updateDetections(predictions);
-            requestAnimationFrame(() => detectFrame(model));
-        });
-    }
-
-    let stableDetections = {};
-let stableResults = [];
-    function updateDetections(predictions) {
-        predictions = predictions.filter(p => p.score > 0.6);
-    predictions = predictions.slice(0, 2);
-    predictions = predictions.filter((p, index, self) => index === self.findIndex(t => t.class === p.class));
-
-    predictions.forEach(prediction => {
-        const cls = prediction.class;
-        stableDetections[cls] = (stableDetections[cls] || 0) + 1;
-    });
-
-    Object.keys(stableDetections).forEach(cls => {
-        if (!predictions.find(p => p.class === cls)) {
-            stableDetections[cls] = 0;
+        // --- VOICE SETUP ---
+        function loadVoice() {
+            const voices = window.speechSynthesis.getVoices();
+            const preferred = [
+                'Samantha', 'Karen', 'Nora', 'Rishi',
+];
+            for (let name of preferred) {
+                const found = voices.find(v => v.name.includes(name));
+                if (found) {
+                    selectedVoice = found;
+                    break;
+                }
+            }
+            if (!selectedVoice) {
+                selectedVoice = voices.find(v => v.lang === 'en-US' && v.name.toLowerCase().includes('female'));
+            }
+            if (!selectedVoice && voices.length > 0) {
+                selectedVoice = voices[0];
+            }
         }
-    });
 
-    stableResults = predictions.filter(p => stableDetections[p.class] >= 3);
+        window.speechSynthesis.onvoiceschanged = loadVoice;
+        loadVoice();
 
-    detectionList.innerHTML = '';
-    if (stableResults.length === 0) {
-        detectionList.innerHTML = '<div class="detection-item"><span class="det-name">Scanning...</span></div>';
-        return;
-    }
-    stableResults.forEach(prediction => {
-        const confidence = Math.round(prediction.score * 100);
-        const item = document.createElement('div');
-        item.className = 'detection-item';
-        item.innerHTML = `
-            <span>🔍</span>
-            <span class="det-name">${prediction.class}</span>
-            <span class="det-conf">${confidence}%</span>
-        `;
-        detectionList.appendChild(item);
-    });
+        // --- SPEAK FUNCTION ---
+        function speak(text, onDone) {
+            window.speechSynthesis.cancel();
+            isSpeaking = true;
+            jeevikaMsgEl.textContent = text;
+            const utterance = new SpeechSynthesisUtterance(text);
+            if (selectedVoice) utterance.voice = selectedVoice;
+            utterance.rate = 0.82;
+            utterance.pitch = 1.05;
+            utterance.volume = 1;
+            utterance.onend = () => {
+                isSpeaking = false;
+                if (onDone) onDone();
+            };
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // --- WAKE UP JEEVIKA ---
+        function startWakeWordListener() {
+    if (!('webkitSpeechRecognition' in window)) return;
+    const wakeRecognition = new webkitSpeechRecognition();
+    wakeRecognition.lang = 'en-IN';
+    wakeRecognition.continuous = false;
+    wakeRecognition.interimResults = false;
+
+    wakeRecognition.onresult = (event) => {
+        const said = event.results[0][0].transcript.toLowerCase();
+        if (said.includes('jeevika') || said.includes('hey jeevika')) {
+            wakeUpJeevika();
+        } else {
+            wakeRecognition.stop();
+            setTimeout(startWakeWordListener, 500);
+        }
+    };
+
+    wakeRecognition.onend = () => {
+        if (!isAwake) {
+            setTimeout(startWakeWordListener, 500);
+        }
+    };
+
+    wakeRecognition.onerror = () => {
+        setTimeout(startWakeWordListener, 1000);
+    };
+
+    wakeRecognition.start();
 }
-</script>
+        function wakeUpJeevika() {
+            isAwake = true;
+            hudJeevika.textContent = 'Online';
+            wakeBtn.textContent = '🔴 Listening...';
+            wakeBtn.classList.add('listening');
+
+            const hour = new Date().getHours();
+            let timeGreeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : hour < 21 ? 'Good evening' : 'Good night';
+            const greeting = `${timeGreeting} Keshav. I am JEEVIKA, your smart glasses assistant. System is ready. How can I help you?`;
+            speak(greeting, () => {
+                startListening();
+            });
+        }
+
+        // --- TOGGLE LISTENING ---
+        function toggleListening() {
+            if (!isAwake) {
+                wakeUpJeevika();
+            } else {
+                startListening();
+            }
+        }
+
+        // --- SPEECH RECOGNITION ---
+        function startListening() {
+            if (!('webkitSpeechRecognition' in window)) {
+                speak('Speech recognition is not supported in this browser. Please use Chrome.');
+                return;
+            }
+            recognition = new webkitSpeechRecognition();
+            recognition.lang = 'en-IN';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            hudJeevika.textContent = 'Listening...';
+            jeevikaMsgEl.textContent = 'Listening... speak your command';
+
+            recognition.onresult = (event) => {
+                const command = event.results[0][0].transcript.toLowerCase();
+                jeevikaMsgEl.textContent = `You said: "${command}"`;
+                handleCommand(command);
+            };
+
+            recognition.onerror = () => {
+                hudJeevika.textContent = 'Online';
+                jeevikaMsgEl.textContent = 'Could not hear. Try again.';
+            };
+
+            recognition.onend = () => {
+                hudJeevika.textContent = 'Online';
+            };
+
+            recognition.start();
+        }
+
+        // --- HANDLE COMMANDS ---
+        function handleCommand(command) {
+            if (command.includes('detect') || command.includes('see') || command.includes('what')) {
+                commandDetect();
+            } else if (command.includes('hello') || command.includes('hi')) {
+                speak('Hello Keshav! How can I help you today?', () => startListening());
+            } else if (command.includes('stop') || command.includes('sleep')) {
+                isAwake = false;
+                isDetecting = false;
+                hudJeevika.textContent = 'Sleeping...';
+                wakeBtn.textContent = '🎤 Hey Jeevika';
+                wakeBtn.classList.remove('listening');
+                speak('Goodbye Keshav. I will be here when you need me.');
+            } else if (command.includes('battery')) {
+                speak('Battery is at 87 percent. Estimated 3 hours remaining.', () => startListening());
+            } else if (command.includes('status')) {
+                speak('All systems are online. Camera active. Detection ready. How can I help?', () => startListening());
+            } else {
+                speak('I did not understand that. Please try again.', () => startListening());
+            }
+        }
+
+        // --- DETECT COMMAND ---
+        function commandDetect() {
+            if (!model) {
+                speak('AI model is still loading. Please wait a moment.');
+                return;
+            }
+            if (!isAwake) {
+                speak('Please wake me up first by saying Hey Jeevika.');
+                return;
+            }
+            isDetecting = true;
+            hudDetection.textContent = 'Scanning...';
+            speak('Scanning your environment now.', () => {
+                detectOnce();
+            });
+        }
+
+        // --- DETECT ONCE ---
+        function detectOnce() {
+            model.detect(video).then(predictions => {
+                predictions = predictions.filter(p => p.score > 0.6);
+                predictions = predictions.filter((p, i, self) => i === self.findIndex(t => t.class === p.class));
+                predictions = predictions.slice(0, 2);
+
+                detectionList.innerHTML = '';
+
+                if (predictions.length === 0) {
+                    detectionList.innerHTML = '<div class="detection-item"><span class="det-name">No objects detected</span></div>';
+                    hudDetection.textContent = 'Nothing found';
+                    speak('I could not detect any objects clearly. Please try again.', () => startListening());
+                    return;
+                }
+
+                let objectNames = predictions.map(p => p.class).join(' and ');
+                hudDetection.textContent = objectNames;
+
+                predictions.forEach(prediction => {
+                    const confidence = Math.round(prediction.score * 100);
+                    const item = document.createElement('div');
+                    item.className = 'detection-item';
+                    item.innerHTML = `
+                        <span>🔍</span>
+                        <span class="det-name">${prediction.class}</span>
+                        <span class="det-conf">${confidence}%</span>
+                    `;
+                    detectionList.appendChild(item);
+                });
+
+                speak(`I can see ${objectNames}.`, () => {
+                    isDetecting = false;
+                    startListening();
+                });
+            });
+        }
+
+        // --- VOICE COMMAND BUTTON ---
+        function commandVoice() {
+            if (!isAwake) {
+                wakeUpJeevika();
+            } else {
+                startListening();
+            }
+        }
+    </script>
 </body>
 </html>
