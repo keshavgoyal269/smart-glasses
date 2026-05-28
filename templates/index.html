@@ -6,178 +6,38 @@
     <title>Smart Glasses AI — JEEVIKA</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: #050508;
-            color: white;
-            font-family: Arial, sans-serif;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+        body { background: #050508; color: white; font-family: Arial, sans-serif; min-height: 100vh; padding: 20px; }
+        .header { text-align: center; margin-bottom: 20px; }
         .header h1 { color: #00e5ff; font-size: 22px; letter-spacing: 3px; }
         .header p { color: #555; font-size: 11px; letter-spacing: 2px; }
-        .glasses-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            max-width: 900px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .lens {
-            flex: 1;
-            height: 240px;
-            border: 2px solid #00e5ff33;
-            border-radius: 20px;
-            background: #0a0a1a;
-            position: relative;
-            overflow: hidden;
-        }
-        .lens-label {
-            position: absolute;
-            top: 10px;
-            left: 12px;
-            font-size: 9px;
-            color: #00e5ff;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            z-index: 10;
-        }
-        .scan-line {
-            position: absolute;
-            left: 0; right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #00e5ff, transparent);
-            animation: scan 2s linear infinite;
-            z-index: 10;
-        }
+        .glasses-container { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 20px; max-width: 900px; margin-left: auto; margin-right: auto; }
+        .lens { flex: 1; height: 240px; border: 2px solid #00e5ff33; border-radius: 20px; background: #0a0a1a; position: relative; overflow: hidden; }
+        .lens-label { position: absolute; top: 10px; left: 12px; font-size: 9px; color: #00e5ff; letter-spacing: 2px; text-transform: uppercase; z-index: 10; }
+        .scan-line { position: absolute; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, #00e5ff, transparent); animation: scan 2s linear infinite; z-index: 10; }
         @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 18px;
-            transform: scaleX(-1);
-        }
-        .bridge {
-            width: 20px;
-            min-width: 20px;
-            border-top: 2px solid #00e5ff33;
-            border-bottom: 2px solid #00e5ff33;
-            height: 30px;
-        }
-        .hud-panel {
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            height: 100%;
-            justify-content: center;
-        }
-        .hud-row {
-            background: rgba(0,229,255,0.05);
-            border: 1px solid rgba(0,229,255,0.1);
-            border-radius: 8px;
-            padding: 7px 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 11px;
-        }
+        video { width: 100%; height: 100%; object-fit: cover; border-radius: 18px; transform: scaleX(-1); }
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; transform: scaleX(-1); }
+        .bridge { width: 20px; min-width: 20px; border-top: 2px solid #00e5ff33; border-bottom: 2px solid #00e5ff33; height: 30px; }
+        .hud-panel { padding: 12px; display: flex; flex-direction: column; gap: 8px; height: 100%; justify-content: center; }
+        .hud-row { background: rgba(0,229,255,0.05); border: 1px solid rgba(0,229,255,0.1); border-radius: 8px; padding: 7px 10px; display: flex; align-items: center; gap: 8px; font-size: 11px; }
         .hud-title { color: #00e5ff; font-size: 9px; letter-spacing: 1px; }
         .hud-value { color: #ccc; font-size: 11px; }
-        .status-dot {
-            width: 6px; height: 6px;
-            border-radius: 50%;
-            background: #00ff88;
-            animation: blink 1.5s infinite;
-            margin-left: auto;
-        }
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #00ff88; animation: blink 1.5s infinite; margin-left: auto; }
         @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
-        .jeevika-status {
-            text-align: center;
-            margin-bottom: 15px;
-            padding: 10px;
-            background: #0a0a1a;
-            border: 1px solid #6c63ff33;
-            border-radius: 12px;
-            max-width: 900px;
-            margin-left: auto;
-            margin-right: auto;
-        }
+        .jeevika-status { text-align: center; margin-bottom: 15px; padding: 10px; background: #0a0a1a; border: 1px solid #6c63ff33; border-radius: 12px; max-width: 900px; margin-left: auto; margin-right: auto; }
         .jeevika-status h3 { color: #6c63ff; font-size: 12px; letter-spacing: 2px; margin-bottom: 4px; }
         #jeevika-message { color: #00e5ff; font-size: 13px; font-style: italic; margin-top: 4px; min-height: 20px; }
-        .wake-btn {
-            display: block;
-            margin: 0 auto 15px;
-            background: linear-gradient(135deg, #6c63ff, #00e5ff);
-            border: none;
-            color: white;
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            letter-spacing: 1px;
-        }
-        .wake-btn.listening {
-            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
-        }
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            max-width: 900px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .ctrl-btn {
-            background: #0a0a1a;
-            border: 1px solid #00e5ff33;
-            color: #aaa;
-            padding: 10px 18px;
-            border-radius: 10px;
-            font-size: 11px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .ctrl-btn:hover, .ctrl-btn.active {
-            border-color: #00e5ff;
-            color: #00e5ff;
-            background: rgba(0,229,255,0.1);
-        }
-        .detection-panel {
-            max-width: 900px;
-            margin: 0 auto 20px;
-            background: #0a0a1a;
-            border: 1px solid #00e5ff22;
-            border-radius: 12px;
-            padding: 15px;
-        }
+        .wake-btn { display: block; margin: 0 auto 15px; background: linear-gradient(135deg, #6c63ff, #00e5ff); border: none; color: white; padding: 12px 30px; border-radius: 25px; font-size: 13px; font-weight: 600; cursor: pointer; letter-spacing: 1px; }
+        .wake-btn.listening { background: linear-gradient(135deg, #ff6b6b, #ff8e53); }
+        .controls { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; max-width: 900px; margin-left: auto; margin-right: auto; }
+        .ctrl-btn { background: #0a0a1a; border: 1px solid #00e5ff33; color: #aaa; padding: 10px 18px; border-radius: 10px; font-size: 11px; cursor: pointer; transition: all 0.2s; }
+        .ctrl-btn:hover, .ctrl-btn.active { border-color: #00e5ff; color: #00e5ff; background: rgba(0,229,255,0.1); }
+        .detection-panel { max-width: 900px; margin: 0 auto 20px; background: #0a0a1a; border: 1px solid #00e5ff22; border-radius: 12px; padding: 15px; }
         .panel-title { font-size: 10px; color: #00e5ff; letter-spacing: 2px; margin-bottom: 12px; }
-        .detection-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 0;
-            border-bottom: 1px solid #ffffff08;
-            font-size: 12px;
-        }
+        .detection-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #ffffff08; font-size: 12px; }
         .det-name { flex: 1; color: #ccc; }
-        .det-conf {
-            font-size: 10px;
-            color: #00e5ff;
-            background: rgba(0,229,255,0.1);
-            padding: 2px 8px;
-            border-radius: 10px;
-        }
+        .det-conf { font-size: 10px; color: #00e5ff; background: rgba(0,229,255,0.1); padding: 2px 8px; border-radius: 10px; }
+        .ar-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,229,255,0.1); border: 1px solid #00e5ff; border-radius: 10px; padding: 8px 16px; font-size: 12px; color: #00e5ff; letter-spacing: 1px; z-index: 20; display: none; text-align: center; backdrop-filter: blur(4px); }
         .footer { text-align: center; font-size: 9px; color: #333; letter-spacing: 2px; margin-top: 10px; }
     </style>
 </head>
@@ -188,10 +48,12 @@
     </div>
 
     <div class="glasses-container">
-        <div class="lens">
+        <div class="lens" id="camera-lens">
             <div class="lens-label">Camera Feed</div>
             <div class="scan-line"></div>
             <video id="webcam" autoplay playsinline></video>
+            <canvas id="overlay-canvas"></canvas>
+            <div class="ar-overlay" id="ar-overlay"></div>
         </div>
         <div class="bridge"></div>
         <div class="lens">
@@ -241,7 +103,7 @@
 
     <div class="controls">
         <button class="ctrl-btn active" onclick="commandDetect()">👁 Detect</button>
-        <button class="ctrl-btn" onclick="startListening()">🎤 Voice</button>
+        <button class="ctrl-btn" onclick="commandFace()">👤 Recognize Face</button>
         <button class="ctrl-btn">📖 Read Text</button>
         <button class="ctrl-btn">🧭 Navigate</button>
         <button class="ctrl-btn">⭐ Context</button>
@@ -263,7 +125,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
     <script>
-        // Elements
         const video = document.getElementById('webcam');
         const detectionList = document.getElementById('detection-list');
         const jeevikaMsgEl = document.getElementById('jeevika-message');
@@ -271,24 +132,43 @@
         const hudJeevika = document.getElementById('hud-jeevika');
         const hudStatus = document.getElementById('hud-status');
         const hudDetection = document.getElementById('hud-detection');
+        const arOverlay = document.getElementById('ar-overlay');
 
         let isAwake = false;
         let model = null;
         let selectedVoice = null;
         let recognition = null;
+        let knownFaces = {};
 
         // Camera
         navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => { video.srcObject = stream; })
             .catch(err => console.log('Camera error:', err));
 
-        // Load AI Model
+        // Load COCO-SSD
         cocoSsd.load().then(m => {
             model = m;
             hudStatus.textContent = 'System Online';
+            console.log('Object detection model loaded');
         });
 
-        // Load Voice
+        // Load known faces list from Flask
+        async function loadKnownFaces() {
+            try {
+                const res = await fetch('/faces-list');
+                const data = await res.json();
+                data.faces.forEach(filename => {
+                    const name = filename.replace(/\.[^/.]+$/, '');
+                    knownFaces[name.toLowerCase()] = `/faces/${filename}`;
+                });
+                console.log('Known faces loaded:', Object.keys(knownFaces));
+            } catch(e) {
+                console.log('Could not load faces:', e);
+            }
+        }
+        loadKnownFaces();
+
+        // Voice
         function loadVoice() {
             const voices = window.speechSynthesis.getVoices();
             const preferred = ['Samantha', 'Karen', 'Nora'];
@@ -301,20 +181,22 @@
         window.speechSynthesis.onvoiceschanged = loadVoice;
         loadVoice();
 
-        // Speak
         function speak(text, onDone) {
             window.speechSynthesis.cancel();
             jeevikaMsgEl.textContent = text;
             const u = new SpeechSynthesisUtterance(text);
             if (selectedVoice) u.voice = selectedVoice;
-            u.rate = 0.82;
-            u.pitch = 1.05;
-            u.volume = 1;
+            u.rate = 0.82; u.pitch = 1.05; u.volume = 1;
             u.onend = () => { if (onDone) onDone(); };
             window.speechSynthesis.speak(u);
         }
 
-        // Activate JEEVIKA - called on button click
+        function showAR(text, duration = 4000) {
+            arOverlay.innerHTML = `👤 ${text}`;
+            arOverlay.style.display = 'block';
+            setTimeout(() => { arOverlay.style.display = 'none'; }, duration);
+        }
+
         function activateJeevika() {
             const hour = new Date().getHours();
             const time = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
@@ -327,12 +209,11 @@
             });
         }
 
-        // Listen for commands
         function startListening() {
             if (!isAwake) return;
-            if (recognition) { recognition.stop(); recognition = null; }
+            if (recognition) { try { recognition.stop(); } catch(e) {} recognition = null; }
 
-            recognition = new SpeechRecognition();
+            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
             recognition.lang = 'en-IN';
             recognition.continuous = false;
             recognition.interimResults = false;
@@ -350,7 +231,6 @@
             recognition.onerror = (e) => {
                 hudJeevika.textContent = 'Online';
                 jeevikaMsgEl.textContent = 'Could not hear clearly. Try again.';
-                setTimeout(() => { if (isAwake) startListening(); }, 1000);
             };
 
             recognition.onend = () => {
@@ -362,10 +242,11 @@
             try { recognition.start(); } catch(e) { console.log(e); }
         }
 
-        // Handle commands
         function handleCommand(command) {
-            if (command.includes('detect') || command.includes('see') || command.includes('what')) {
+            if (command.includes('detect') || command.includes('see') || command.includes('what is') || command.includes('scan')) {
                 commandDetect();
+            } else if (command.includes('face') || command.includes('who') || command.includes('recognize') || command.includes('identify') || command.includes('name')) {
+                commandFace();
             } else if (command.includes('hello') || command.includes('hi')) {
                 speak('Hello Keshav! How can I help you?', () => startListening());
             } else if (command.includes('battery')) {
@@ -383,15 +264,18 @@
             }
         }
 
-        // Detect objects
+        // Object Detection
         function commandDetect() {
-            if (!model) { speak('AI model still loading. Please wait.'); return; }
+            if (!model) {
+                speak('AI model is still loading. Please wait a moment.', () => startListening());
+                return;
+            }
             hudDetection.textContent = 'Scanning...';
             speak('Scanning now.', () => {
                 model.detect(video).then(predictions => {
-                    predictions = predictions.filter(p => p.score > 0.6);
+                    predictions = predictions.filter(p => p.score > 0.5);
                     predictions = predictions.filter((p, i, s) => i === s.findIndex(t => t.class === p.class));
-                    predictions = predictions.slice(0, 2);
+                    predictions = predictions.slice(0, 3);
 
                     detectionList.innerHTML = '';
 
@@ -416,6 +300,52 @@
                     speak(`I can see ${names}.`, () => startListening());
                 });
             });
+        }
+
+        // Face Recognition - sends frame to Python backend
+        async function commandFace() {
+            hudDetection.textContent = 'Recognizing...';
+            jeevikaMsgEl.textContent = 'Looking for faces...';
+
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            const imageData = canvas.toDataURL('image/jpeg', 0.8);
+
+            try {
+                const response = await fetch('/recognize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: imageData })
+                });
+                const result = await response.json();
+
+                detectionList.innerHTML = '';
+
+                if (result.faces.length === 0) {
+                    hudDetection.textContent = 'No face found';
+                    speak('I could not detect any face clearly. Please look directly at the camera.', () => startListening());
+                    return;
+                }
+
+                result.faces.forEach(face => {
+                    const item = document.createElement('div');
+                    item.className = 'detection-item';
+                    item.innerHTML = `<span>👤</span><span class="det-name">${face.name}</span><span class="det-conf">${face.confidence}%</span>`;
+                    detectionList.appendChild(item);
+                    showAR(face.name);
+                    hudDetection.textContent = face.name;
+                });
+
+                const names = result.faces.map(f => f.name).join(' and ');
+                speak(`I can see ${names}.`, () => startListening());
+
+            } catch(e) {
+                speak('Face recognition is not available right now.', () => startListening());
+                console.log('Face error:', e);
+            }
         }
     </script>
 </body>
