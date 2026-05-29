@@ -243,9 +243,9 @@
         }
 
         function handleCommand(command) {
-            if (command.includes('detect') || command.includes('see') || command.includes('what is') || command.includes('scan')) {
+           if (command.includes('detect') || command.includes('scan')) {
                 commandDetect();
-            } else if (command.includes('face') || command.includes('who') || command.includes('recognize') || command.includes('identify') || command.includes('name')) {
+            } else if (command.includes('face') ||  command.includes('recognize') || command.includes('identify') || command.includes('name')) {
                 commandFace();
             } else if (command.includes('hello') || command.includes('hi')) {
                 speak('Hello Keshav! How can I help you?', () => startListening());
@@ -260,8 +260,8 @@
                 wakeBtn.classList.remove('listening');
                 speak('Goodbye Keshav. I will be here when you need me.');
             } else {
-                speak('I did not understand. Please try again.', () => startListening());
-            }
+    askGemini(command);
+}
         }
 
         // Object Detection
@@ -345,6 +345,24 @@
             } catch(e) {
                 speak('Face recognition is not available right now.', () => startListening());
                 console.log('Face error:', e);
+            }
+        }
+    // This is the askGemini function — add it here
+        async function askGemini(question) {
+            hudJeevika.textContent = 'Thinking...';
+            jeevikaMsgEl.textContent = 'Let me think...';
+            
+            try {
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: question })
+                });
+                const result = await response.json();
+                showAR(result.answer, 8000);
+                speak(result.answer, () => startListening());
+            } catch(e) {
+                speak('I could not get an answer right now.', () => startListening());
             }
         }
     </script>

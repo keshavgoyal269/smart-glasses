@@ -6,10 +6,11 @@ import numpy as np
 import base64
 from PIL import Image
 import io
+import urllib.request
+import json
 
 app = Flask(__name__)
 
-# Load known faces on startup
 known_encodings = []
 known_names = []
 
@@ -56,18 +57,13 @@ def recognize():
     try:
         data = request.get_json()
         image_data = data['image']
-
-        # Decode base64 image
         if ',' in image_data:
             image_data = image_data.split(',')[1]
         img_bytes = base64.b64decode(image_data)
         img = Image.open(io.BytesIO(img_bytes)).convert('RGB')
         img_array = np.array(img)
-
-        # Find faces
         face_locations = face_recognition.face_locations(img_array)
         face_encs = face_recognition.face_encodings(img_array, face_locations)
-
         results = []
         for enc in face_encs:
             name = 'Unknown'
@@ -80,12 +76,36 @@ def recognize():
                     name = known_names[best_idx]
                     confidence = round((1 - best_dist) * 100)
             results.append({'name': name, 'confidence': confidence})
-
         return jsonify({'faces': results})
-
     except Exception as e:
         print(f'Recognition error: {e}')
         return jsonify({'faces': [], 'error': str(e)})
+
+@app.route('/ask', methods=['POST'])
+def ask_ai():
+    try:
+        data = request.get_json()
+        question = data.get('question', '')
+        prompt = f"You are JEEVIKA, a smart glasses AI assistant. Answer briefly in 2-3 sentences only. Question: {question}"
+        payload = json.dumps({
+            "model": "llama3.2",
+            "prompt": prompt,
+            "stream": False
+        }).encode('utf-8')
+        req = urllib.request.Request(
+            'http://localhost:11434/api/generate',
+            data=payload,
+            headers={'Content-Type': 'application/json'},
+            method='POST'
+        )
+        with urllib.request.urlopen(req) as response:
+            result = json.loads(response.read().decode('utf-8'))
+            answer = result['response']
+            print(f'AI answer: {answer}')
+            return jsonify({'answer': answer})
+    except Exception as e:
+        print(f'AI error: {e}')
+        return jsonify({'answer': 'I could not get an answer right now. Please try again.'})
 
 if __name__ == '__main__':
     app.run(debug=True)
