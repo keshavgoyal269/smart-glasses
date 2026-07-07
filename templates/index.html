@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Glasses AI — JEEVIKA</title>
+    <title>Smart Glasses AI — IRIS</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #050508; color: white; font-family: Arial, sans-serif; min-height: 100vh; padding: 20px; }
@@ -24,9 +24,9 @@
         .hud-value { color: #ccc; font-size: 11px; }
         .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #00ff88; animation: blink 1.5s infinite; margin-left: auto; }
         @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
-        .jeevika-status { text-align: center; margin-bottom: 15px; padding: 10px; background: #0a0a1a; border: 1px solid #6c63ff33; border-radius: 12px; max-width: 900px; margin-left: auto; margin-right: auto; }
-        .jeevika-status h3 { color: #6c63ff; font-size: 12px; letter-spacing: 2px; margin-bottom: 4px; }
-        #jeevika-message { color: #00e5ff; font-size: 13px; font-style: italic; margin-top: 4px; min-height: 20px; }
+        .IRIS-status { text-align: center; margin-bottom: 15px; padding: 10px; background: #0a0a1a; border: 1px solid #6c63ff33; border-radius: 12px; max-width: 900px; margin-left: auto; margin-right: auto; }
+        .IRIS-status h3 { color: #6c63ff; font-size: 12px; letter-spacing: 2px; margin-bottom: 4px; }
+        #IRIS-message { color: #00e5ff; font-size: 13px; font-style: italic; margin-top: 4px; min-height: 20px; }
         .wake-btn { display: block; margin: 0 auto 15px; background: linear-gradient(135deg, #6c63ff, #00e5ff); border: none; color: white; padding: 12px 30px; border-radius: 25px; font-size: 13px; font-weight: 600; cursor: pointer; letter-spacing: 1px; }
         .wake-btn.listening { background: linear-gradient(135deg, #ff6b6b, #ff8e53); }
         .controls { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; max-width: 900px; margin-left: auto; margin-right: auto; }
@@ -44,7 +44,7 @@
 <body>
     <div class="header">
         <h1>SMART GLASSES AI</h1>
-        <p>by Keshav Goyal — Powered by JEEVIKA</p>
+        <p>by Keshav Goyal — Powered by IRIS</p>
     </div>
 
     <div class="glasses-container">
@@ -77,8 +77,8 @@
                 <div class="hud-row">
                     <span>🎤</span>
                     <div>
-                        <div class="hud-title">JEEVIKA</div>
-                        <div class="hud-value" id="hud-jeevika">Sleeping...</div>
+                        <div class="hud-title">IRIS</div>
+                        <div class="hud-value" id="hud-IRIS">Sleeping...</div>
                     </div>
                 </div>
                 <div class="hud-row">
@@ -92,13 +92,13 @@
         </div>
     </div>
 
-    <div class="jeevika-status">
-        <h3>✨ JEEVIKA</h3>
-        <p id="jeevika-message">Click the button below to activate JEEVIKA...</p>
+    <div class="IRIS-status">
+        <h3>✨ IRIS</h3>
+        <p id="IRIS-message">Click the button below to activate IRIS...</p>
     </div>
 
-    <button class="wake-btn" id="wake-btn" onclick="activateJeevika()">
-        🎤 Activate JEEVIKA
+    <button class="wake-btn" id="wake-btn" onclick="activateIRIS()">
+        🎤 Activate IRIS
     </button>
 
     <div class="controls">
@@ -115,21 +115,21 @@
         <div class="panel-title">Detection Results</div>
         <div id="detection-list">
             <div class="detection-item">
-                <span class="det-name">Waiting for JEEVIKA...</span>
+                <span class="det-name">Waiting for IRIS...</span>
             </div>
         </div>
     </div>
 
-    <div class="footer">Powered by Python · Flask · TensorFlow · JEEVIKA AI</div>
+    <div class="footer">Powered by Python · Flask · TensorFlow · IRIS AI</div>
 
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
     <script>
         const video = document.getElementById('webcam');
         const detectionList = document.getElementById('detection-list');
-        const jeevikaMsgEl = document.getElementById('jeevika-message');
+        const IRISMsgEl = document.getElementById('IRIS-message');
         const wakeBtn = document.getElementById('wake-btn');
-        const hudJeevika = document.getElementById('hud-jeevika');
+        const hudIRIS = document.getElementById('hud-IRIS');
         const hudStatus = document.getElementById('hud-status');
         const hudDetection = document.getElementById('hud-detection');
         const arOverlay = document.getElementById('ar-overlay');
@@ -183,7 +183,7 @@
 
         function speak(text, onDone) {
             window.speechSynthesis.cancel();
-            jeevikaMsgEl.textContent = text;
+            IRISMsgEl.textContent = text;
             const u = new SpeechSynthesisUtterance(text);
             if (selectedVoice) u.voice = selectedVoice;
             u.rate = 0.82; u.pitch = 1.05; u.volume = 1;
@@ -197,14 +197,14 @@
             setTimeout(() => { arOverlay.style.display = 'none'; }, duration);
         }
 
-        function activateJeevika() {
+        function activateIRIS() {
             const hour = new Date().getHours();
             const time = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
             isAwake = true;
-            hudJeevika.textContent = 'Online';
-            wakeBtn.textContent = '🎤 JEEVIKA Active';
+            hudIRIS.textContent = 'Online';
+            wakeBtn.textContent = '🎤 IRIS Active';
             wakeBtn.classList.add('listening');
-            speak(`${time} Keshav. I am JEEVIKA, your smart glasses assistant. System is ready. How can I help you?`, () => {
+            speak(`${time} Keshav. I am IRIS, your smart glasses assistant. System is ready. How can I help you?`, () => {
                 startListening();
             });
         }
@@ -218,23 +218,23 @@
             recognition.continuous = false;
             recognition.interimResults = false;
 
-            hudJeevika.textContent = 'Listening...';
-            jeevikaMsgEl.textContent = 'Listening... say your command';
+            hudIRIS.textContent = 'Listening...';
+            IRISMsgEl.textContent = 'Listening... say your command';
 
             recognition.onresult = (event) => {
                 const command = event.results[0][0].transcript.toLowerCase();
-                jeevikaMsgEl.textContent = `You said: "${command}"`;
-                hudJeevika.textContent = 'Processing...';
+                IRISMsgEl.textContent = `You said: "${command}"`;
+                hudIRIS.textContent = 'Processing...';
                 handleCommand(command);
             };
 
             recognition.onerror = (e) => {
-                hudJeevika.textContent = 'Online';
-                jeevikaMsgEl.textContent = 'Could not hear clearly. Try again.';
+                hudIRIS.textContent = 'Online';
+                IRISMsgEl.textContent = 'Could not hear clearly. Try again.';
             };
 
             recognition.onend = () => {
-                if (isAwake && hudJeevika.textContent === 'Listening...') {
+                if (isAwake && hudIRIS.textContent === 'Listening...') {
                     setTimeout(() => { if (isAwake) startListening(); }, 500);
                 }
             };
@@ -255,8 +255,8 @@
                 speak('All systems online. Camera active. Detection ready.', () => startListening());
             } else if (command.includes('stop') || command.includes('sleep') || command.includes('bye')) {
                 isAwake = false;
-                hudJeevika.textContent = 'Sleeping...';
-                wakeBtn.textContent = '🎤 Activate JEEVIKA';
+                hudIRIS.textContent = 'Sleeping...';
+                wakeBtn.textContent = '🎤 Activate IRIS';
                 wakeBtn.classList.remove('listening');
                 speak('Goodbye Keshav. I will be here when you need me.');
             } else {
@@ -311,7 +311,7 @@
         // Face Recognition - sends frame to Python backend
         async function commandFace() {
             hudDetection.textContent = 'Recognizing...';
-            jeevikaMsgEl.textContent = 'Looking for faces...';
+            IRISMsgEl.textContent = 'Looking for faces...';
 
             const canvas = document.createElement('canvas');
             canvas.width = video.videoWidth;
@@ -355,8 +355,8 @@
         }
     // This is the askGemini function — add it here
         async function askGemini(question) {
-            hudJeevika.textContent = 'Thinking...';
-            jeevikaMsgEl.textContent = 'Let me think...';
+            hudIRIS.textContent = 'Thinking...';
+            IRISMsgEl.textContent = 'Let me think...';
             
             try {
                 const response = await fetch('/ask', {
