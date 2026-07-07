@@ -266,41 +266,47 @@
 
         // Object Detection
         function commandDetect() {
-            if (!model) {
-                speak('AI model is still loading. Please wait a moment.', () => startListening());
+    hudDetection.textContent = 'Scanning...';
+    speak('Scanning now.', () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        const imageData = canvas.toDataURL('image/jpeg', 0.8);
+
+        fetch('/detect', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: imageData })
+        })
+        .then(r => r.json())
+        .then(result => {
+            const detections = result.detections;
+            detectionList.innerHTML = '';
+
+            if (detections.length === 0) {
+                hudDetection.textContent = 'Nothing found';
+                speak('I could not detect anything clearly.', () => startListening());
                 return;
             }
-            hudDetection.textContent = 'Scanning...';
-            speak('Scanning now.', () => {
-                model.detect(video).then(predictions => {
-                    predictions = predictions.filter(p => p.score > 0.5);
-                    predictions = predictions.filter((p, i, s) => i === s.findIndex(t => t.class === p.class));
-                    predictions = predictions.slice(0, 3);
 
-                    detectionList.innerHTML = '';
-
-                    if (predictions.length === 0) {
-                        detectionList.innerHTML = '<div class="detection-item"><span class="det-name">No objects detected</span></div>';
-                        hudDetection.textContent = 'Nothing found';
-                        speak('I could not detect anything clearly.', () => startListening());
-                        return;
-                    }
-
-                    let names = predictions.map(p => p.class).join(' and ');
-                    hudDetection.textContent = names;
-
-                    predictions.forEach(p => {
-                        const conf = Math.round(p.score * 100);
-                        const item = document.createElement('div');
-                        item.className = 'detection-item';
-                        item.innerHTML = `<span>🔍</span><span class="det-name">${p.class}</span><span class="det-conf">${conf}%</span>`;
-                        detectionList.appendChild(item);
-                    });
-
-                    speak(`I can see ${names}.`, () => startListening());
-                });
+            detections.slice(0, 5).forEach(d => {
+                const item = document.createElement('div');
+                item.className = 'detection-item';
+                item.innerHTML = `<span class="det-name">${d.label}</span><span class="det-conf">${d.confidence}%</span>`;
+                detectionList.appendChild(item);
             });
-        }
+
+            const names = detections.slice(0, 3).map(d => d.label).join(' and ');
+            hudDetection.textContent = names;
+            speak(`I can see ${names}.`, () => startListening());
+        })
+        .catch(e => {
+            speak('Detection failed. Please try again.', () => startListening());
+        });
+    });
+}
+        
 
         // Face Recognition - sends frame to Python backend
         async function commandFace() {
